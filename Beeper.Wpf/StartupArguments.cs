@@ -11,26 +11,27 @@ namespace Beeper.Wpf
     {
         public StartupArguments()
         {
-            Song = new(value => (File.Exists(value) && value.EndsWith(".mid"), "Either file doesn't exist or isn't a `.mid` file"))
+            Song = new(value => (File.Exists(value) && value.EndsWith(".mid"), $"Either file `{value}` doesn't exist or isn't a `.mid` file"))
             {
                 Description = "Path to the song `.mid` file to play",
                 FullName = $"{StartupArgument.ArguementDeclerator}song",
                 Shortcut= $"{StartupArgument.ArguementDeclerator}s",
                 Required = $"Only of {StartupArgument.ArguementDeclerator}sd isn't used",
             };
-            SongsDirectory = new(value => (Directory.Exists(value) && Directory.EnumerateFiles(value).Any(), "Either directory is empty, or it doesn't exist."))
-            {
-                Description = "Path to the song `.mid` file to play",
-                FullName = $"{StartupArgument.ArguementDeclerator}song",
-                Shortcut= $"{StartupArgument.ArguementDeclerator}s",
-                Required = $"Only of {StartupArgument.ArguementDeclerator}sd isn't used",                
-            };
-            MaxNotes = new(value => (true, string.Empty))
+            SongsDirectory = new(value => (Directory.Exists(value) && Directory.EnumerateFiles(value).Any(), $"Either directory `{value}` is empty, or it doesn't exist."))
             {
                 Description = "Path to the directory (folder) where the all song `.mid` files are located. A random song will be chosen every time.",
                 FullName = $"{StartupArgument.ArguementDeclerator}songdirectory",
                 Shortcut= $"{StartupArgument.ArguementDeclerator}sd",
-                Required = $"Only if {StartupArgument.ArguementDeclerator}s isn't used",
+                Required = $"Only of {StartupArgument.ArguementDeclerator}s isn't used",                
+                DefaultValue = @"\MidiFiles",
+            };
+            MaxNotes = new(value => (int.TryParse(value, out _), $"The value `{value}` doesn't seem to be a valid integer number."))
+            {
+                Description = "Path to the directory (folder) where the all song `.mid` files are located. A random song will be chosen every time.",
+                FullName = $"{StartupArgument.ArguementDeclerator}maxnotes",
+                Shortcut= $"{StartupArgument.ArguementDeclerator}mn",
+                Required = $"No",
                 DefaultValue = "60",
             };
         }
@@ -82,11 +83,11 @@ namespace Beeper.Wpf
         public IEnumerable<StartupArgument> Arguments => new[]
         {
             Song,
-            MaxNotes,
             SongsDirectory,
+            MaxNotes,
         };
     }
-    
+
     public record class StartupArgument
     {
         /// <summary>
@@ -112,13 +113,14 @@ namespace Beeper.Wpf
 
         public string Required { get; set; }
 
-        public string Value { get; set; }
+        public string Value { get => _value ?? DefaultValue; set => _value = value; }
 
         public string DefaultValue { get; set; }
 
         private Func<string, (bool isValid, string errorMessage)> _ValueValidator { get; }
 
         public const string ArguementDeclerator = "-";
+        private string _value;
 
         public string ToArgumment()
         {
@@ -137,7 +139,7 @@ namespace Beeper.Wpf
             return result.isValid;
         }
 
-        
+
 
     }
 }

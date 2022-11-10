@@ -1,14 +1,77 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using Beeper.Wpf;
+using System.Diagnostics;
+
 namespace MyProject;
 class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
-        if (args.Length == 0)
-        {
+        PrintUsage(new());
 
+        using var process = new Process();
+
+        // https://stackoverflow.com/a/45286568
+        AppDomain.CurrentDomain.DomainUnload += (s, e) => TryKill(process);
+        AppDomain.CurrentDomain.ProcessExit += (s, e) => TryKill(process);
+        AppDomain.CurrentDomain.UnhandledException += (s, e) => TryKill(process);
+        Console.CancelKeyPress += delegate (object? sender, ConsoleCancelEventArgs e) {
+            e.Cancel = true;
+            TryKill(process);
+        };
+
+        try
+        {
+            var arg = new StartupArguments(args);
+
+            process.StartInfo.FileName = "Beeper.Wpf.exe";
+            process.StartInfo.Arguments = string.Join(" ", args);
+            process.Start();
+            process.WaitForExit();
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine(ex.Message);
             PressAnyKeyToExit();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.StackTrace);
+            Console.WriteLine(ex.Message);
+            Console.WriteLine("Unexpected error occured!");
+            PressAnyKeyToExit();
+        }
+        finally
+        {
+            TryKill(process);
+        }
+    }
+
+    private static void TryKill(Process? process)
+    {
+        try
+        {
+            process?.Kill(); 
+            process?.WaitForExit();
+            process?.Dispose();
+        }
+        catch (Exception)
+        {
+            process?.Dispose();
+        }
+    }
+
+    private static void PrintUsage(StartupArguments arg)
+    {
+        Console.WriteLine("Usage");
+        foreach (var argument in arg.Arguments)
+        {
+            Console.WriteLine(argument.Shortcut);
+            Console.WriteLine(argument.FullName);
+            Console.WriteLine($"\t{argument.Description}");
+            Console.WriteLine($"\tRequired: {argument.Required}");
+            Console.WriteLine($"\tDefaultValue: {argument.DefaultValue}");
+            Console.WriteLine();
         }
     }
 
