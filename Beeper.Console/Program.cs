@@ -31,14 +31,20 @@ class Program
         }
         catch (ArgumentException ex)
         {
+            var color = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(ex.Message);
+            Console.ForegroundColor = color;
             PressAnyKeyToExit();
         }
         catch (Exception ex)
         {
+            var color = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(ex.StackTrace);
             Console.WriteLine(ex.Message);
             Console.WriteLine("Unexpected error occured!");
+            Console.ForegroundColor = color;
             PressAnyKeyToExit();
         }
         finally

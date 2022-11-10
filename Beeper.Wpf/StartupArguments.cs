@@ -13,7 +13,7 @@ namespace Beeper.Wpf
         {
             Song = new(value => (File.Exists(value) && value.EndsWith(".mid"), $"Either file `{value}` doesn't exist or isn't a `.mid` file"))
             {
-                Description = "Path to the song `.mid` file to play",
+                Description = "Path to the song `.mid` file to play. This will be override anything set in `-sd`.",
                 FullName = $"{StartupArgument.ArguementDeclerator}song",
                 Shortcut= $"{StartupArgument.ArguementDeclerator}s",
                 Required = $"Only of {StartupArgument.ArguementDeclerator}sd isn't used",
@@ -24,7 +24,7 @@ namespace Beeper.Wpf
                 FullName = $"{StartupArgument.ArguementDeclerator}songdirectory",
                 Shortcut= $"{StartupArgument.ArguementDeclerator}sd",
                 Required = $"Only of {StartupArgument.ArguementDeclerator}s isn't used",                
-                DefaultValue = @"\MidiFiles",
+                DefaultValue = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MidiFiles"),
             };
             MaxNotes = new(value => (int.TryParse(value, out _), $"The value `{value}` doesn't seem to be a valid integer number."))
             {
@@ -32,7 +32,7 @@ namespace Beeper.Wpf
                 FullName = $"{StartupArgument.ArguementDeclerator}maxnotes",
                 Shortcut= $"{StartupArgument.ArguementDeclerator}mn",
                 Required = $"No",
-                DefaultValue = "60",
+                DefaultValue = "30",
             };
         }
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,9 +21,19 @@ namespace Beeper.Wpf
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            var player = new MidiFilePlayer();
+            var random = new Random(Guid.NewGuid().GetHashCode());
+            var args = new StartupArguments(e.Args);
 
-            player.StartPlaying();
+            string file = args.Song.Value;
+            if (!args.Song.Validate())
+            {
+                var songs = Directory.GetFiles(args.SongsDirectory.Value, "*.mid");
+                file = songs[random.Next(0, songs.Length - 1)];
+            }
+
+            var player = new MidiFilePlayer(file);
+            player.StartPlaying(int.Parse(args.MaxNotes.Value));
+
             KListener.KeyDown += (_, _) => player.SkipToNextNote();
         }
 
