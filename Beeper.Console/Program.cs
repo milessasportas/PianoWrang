@@ -23,6 +23,8 @@ class Program
         try
         {
             var arg = new StartupArguments(args);
+            Console.Clear();
+            PrintUsage(arg);
 
             process.StartInfo.FileName = "Beeper.Wpf.exe";
             process.StartInfo.Arguments = string.Join(" ", args);
@@ -77,6 +79,7 @@ class Program
             Console.WriteLine($"\t{argument.Description}");
             Console.WriteLine($"\tRequired: {argument.Required}");
             Console.WriteLine($"\tDefaultValue: {argument.DefaultValue}");
+            Console.WriteLine($"\t\tCurrentValue: {argument.Value}");
             Console.WriteLine();
         }
     }

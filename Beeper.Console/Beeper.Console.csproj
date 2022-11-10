@@ -23,6 +23,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="MidiFiles\30121_The-Flea-Waltz-Der-Flohwalzer.mid">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="MidiFiles\at-zanarkand.mid">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="MidiFiles\for_elise_by_beethoven.mid">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
