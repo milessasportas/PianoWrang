@@ -32,15 +32,18 @@ namespace Beeper.Wpf
             }
 
             var player = new MidiFilePlayer(file);
-            player.StartPlaying(int.Parse(args.MaxNotes.Value));
+            var task = player.StartPlaying(int.Parse(args.MaxNotes.Value))
+                .ContinueWith(t => {
+                    KListener?.Dispose();
+                    Environment.Exit(0);
+                });
 
             KListener.KeyDown += (_, _) => player.SkipToNextNote();
         }
 
-
-        private void Application_Exit(object sender, ExitEventArgs e)
+        protected override void OnExit(ExitEventArgs e)
         {
-            KListener.Dispose();
+            KListener?.Dispose();
         }
     }
 }
