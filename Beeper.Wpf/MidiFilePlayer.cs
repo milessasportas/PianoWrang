@@ -30,6 +30,8 @@ namespace Beeper.Wpf
         public void SkipToNextNote()
         {
             _NotePlayingCancelSource?.Cancel();
+            _NotePlayingCancelSource?.Dispose();
+            _NotePlayingCancelSource = new CancellationTokenSource();
         }
 
         public Task StartPlaying(int notesToPlay = int.MaxValue)
@@ -39,36 +41,52 @@ namespace Beeper.Wpf
                 using var outputDevice = OutputDevice.GetByName("Microsoft GS Wavetable Synth");
                 using var playback = _MidiFile.GetPlayback(outputDevice);
 
-                var notes = _MidiFile.GetNotes().Take(notesToPlay);
+                var notes = _MidiFile.GetNotes();
+                _NotePlayingCancelSource ??= new CancellationTokenSource();
 
-                foreach (Note note in notes)
+                foreach (var notesByStartTime in notes.GroupBy(g => g.Time).Take(notesToPlay))
                 {
-                    _NotePlayingCancelSource = new CancellationTokenSource();
-                    outputDevice.SendEvent(new NoteOnEvent(note.NoteNumber, note.Velocity)
+                    var timespanToStartNextNote = notesByStartTime
+                        .Select(n => n.EndTimeAs<MetricTimeSpan>(_TempoMap) - n.TimeAs<MetricTimeSpan>(_TempoMap))
+                        .Min()
+                    ;
+
+                    foreach (var note in notesByStartTime)
                     {
-                        Channel = note.Channel,
-                        DeltaTime = note.Time,
-                    });
+                        outputDevice.SendEvent(new NoteOnEvent(note.NoteNumber, note.Velocity)
+                        {
+                            Channel = note.Channel,
+                            DeltaTime = note.Time,
+                        });
+
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                var start = note.TimeAs<MetricTimeSpan>(_TempoMap);
+                                var end = note.EndTimeAs<MetricTimeSpan>(_TempoMap);
+                                await Task.Delay(end - start, _NotePlayingCancelSource.Token);
+                            }
+                            catch (Exception)
+                            {
+                            }
+
+                            outputDevice.SendEvent(new NoteOffEvent(note.NoteNumber, note.Velocity)
+                            {
+                                Channel = note.Channel,
+                                DeltaTime = note.Time,
+                            });
+                        });
+                    }
 
                     try
                     {
-                        var start = note.TimeAs<MetricTimeSpan>(_TempoMap);
-                        var end = note.EndTimeAs<MetricTimeSpan>(_TempoMap);
-                        await Task.Delay(end - start, _NotePlayingCancelSource.Token);
+                        await Task.Delay(timespanToStartNextNote, _NotePlayingCancelSource.Token);
                     }
                     catch (Exception)
                     {
                     }
-
-                    outputDevice.SendEvent(new NoteOffEvent(note.NoteNumber, note.Velocity)
-                    {
-                        Channel = note.Channel,
-                        DeltaTime = note.Time,
-                    });
-
-                    _NotePlayingCancelSource.Dispose();
                 }
-
             });
         }
     }
