@@ -28,7 +28,7 @@ namespace Beeper.Wpf
             if (!args.Song.Validate())
             {
                 var songs = Directory.GetFiles(args.SongsDirectory.Value, "*.mid");
-                file = songs[random.Next(0, songs.Length - 1)];
+                file = songs[random.Next(0, songs.Length)];
             }
 
             var player = new MidiFilePlayer(file);
