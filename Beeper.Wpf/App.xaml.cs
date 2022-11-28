@@ -32,6 +32,7 @@ namespace Beeper.Wpf
             }
 
             var player = new MidiFilePlayer(file);
+            player.AutoplayNextNote = !string.IsNullOrWhiteSpace(args.AutoPlay.Value);
             var task = player.StartPlaying(int.Parse(args.MaxNotes.Value))
                 .ContinueWith(t => {
                     KListener?.Dispose();

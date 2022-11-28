@@ -17,6 +17,7 @@ namespace Beeper.Wpf
                 FullName = $"{StartupArgument.ArguementDeclerator}song",
                 Shortcut= $"{StartupArgument.ArguementDeclerator}s",
                 Required = $"Only of {StartupArgument.ArguementDeclerator}sd isn't used",
+                NeedsValue = true,
             };
             SongsDirectory = new(value => (Directory.Exists(value) && Directory.EnumerateFiles(value).Any(), $"Either directory `{value}` is empty, or it doesn't exist."))
             {
@@ -25,6 +26,7 @@ namespace Beeper.Wpf
                 Shortcut= $"{StartupArgument.ArguementDeclerator}sd",
                 Required = $"Only of {StartupArgument.ArguementDeclerator}s isn't used",                
                 DefaultValue = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MidiFiles"),
+                NeedsValue = true,
             };
             MaxNotes = new(value => (int.TryParse(value, out _), $"The value `{value}` doesn't seem to be a valid integer number."))
             {
@@ -33,6 +35,17 @@ namespace Beeper.Wpf
                 Shortcut= $"{StartupArgument.ArguementDeclerator}mn",
                 Required = $"No",
                 DefaultValue = "30",
+                NeedsValue = true,
+            };
+            AutoPlay = new(_ => (true, string.Empty))
+            {
+                Description = $"When this argument is passed, then the music will automatically start playing and a keypress will skip to next note. " +
+                        $"Default behaviour is that a keypress will cause a note to play (no autoplay).",
+                FullName = $"{StartupArgument.ArguementDeclerator}autoplay",
+                Shortcut = $"{StartupArgument.ArguementDeclerator}ap",
+                Required = $"No",
+                DefaultValue = "",
+                NeedsValue = false,
             };
         }
 
@@ -55,12 +68,14 @@ namespace Beeper.Wpf
                     var value when value == Song.FullName => Song,
                     var value when value == SongsDirectory.Shortcut => SongsDirectory,
                     var value when value == SongsDirectory.FullName => SongsDirectory,
+                    var value when value == AutoPlay.Shortcut => AutoPlay,
+                    var value when value == AutoPlay.FullName => AutoPlay,
                     _ => throw new ArgumentException($"The Argument {argument} was not recognized as propper argument.", argument),
                 };
 
                 try
                 {
-                    argumentToSet.Value = arguments[++i];
+                    argumentToSet.Value = argumentToSet.NeedsValue ? arguments[++i] : "WasPassed";
                 }
                 catch (Exception)
                 {
@@ -80,11 +95,14 @@ namespace Beeper.Wpf
 
         public StartupArgument SongsDirectory { get; set; }
 
+        public StartupArgument AutoPlay { get; set; }
+
         public IEnumerable<StartupArgument> Arguments => new[]
         {
             Song,
             SongsDirectory,
             MaxNotes,
+            AutoPlay,
         };
     }
 
@@ -118,6 +136,11 @@ namespace Beeper.Wpf
         public string DefaultValue { get; set; }
 
         private Func<string, (bool isValid, string errorMessage)> _ValueValidator { get; }
+
+        /// <summary>
+        /// Wether the Arguemnt is followed by it's value
+        /// </summary>
+        public bool NeedsValue { get;  set; }
 
         public const string ArguementDeclerator = "-";
         private string _value;

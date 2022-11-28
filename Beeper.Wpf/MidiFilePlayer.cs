@@ -20,6 +20,7 @@ namespace Beeper.Wpf
         /// Defaults to "Microsoft GS Wavetable Synth"
         /// </summary>
         public string OutputDeviceName { get; set; } = "Microsoft GS Wavetable Synth";
+        public bool AutoplayNextNote { get; set; } = true;
 
         public MidiFilePlayer(string midiFilePath = @"D:\Repos\Beeper\Beeper.Console\MidiFiles\for_elise_by_beethoven.mid")
         {
@@ -43,6 +44,18 @@ namespace Beeper.Wpf
 
                 var notes = _MidiFile.GetNotes();
                 _NotePlayingCancelSource ??= new CancellationTokenSource();
+
+                if (!AutoplayNextNote)
+                {
+                    // Wait for initial keypress
+                    try
+                    {
+                        await Task.Delay(Timeout.Infinite, _NotePlayingCancelSource.Token);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
 
                 foreach (var notesByStartTime in notes.GroupBy(g => g.Time).Take(notesToPlay))
                 {
@@ -81,7 +94,7 @@ namespace Beeper.Wpf
 
                     try
                     {
-                        await Task.Delay(timespanToStartNextNote, _NotePlayingCancelSource.Token);
+                        await (AutoplayNextNote ? Task.Delay(timespanToStartNextNote, _NotePlayingCancelSource.Token) : Task.Delay(Timeout.Infinite, _NotePlayingCancelSource.Token));
                     }
                     catch (Exception)
                     {

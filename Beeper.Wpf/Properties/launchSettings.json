@@ -2,7 +2,7 @@
   "profiles": {
     "Beeper.Wpf": {
       "commandName": "Project",
-      "commandLineArgs": "-sd D:\\Repos\\Beeper\\Beeper.Console\\bin\\Release\\net6.0-windows\\MidiFiles"
+      "commandLineArgs": "-sd D:\\Repos\\Beeper\\Beeper.Console\\bin\\Release\\net6.0-windows\\MidiFiles -ap"
     }
   }
 }
