@@ -21,6 +21,17 @@ namespace Beeper.Wpf
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            var currentProcess = Process.GetCurrentProcess();
+            var name = currentProcess.ProcessName;
+
+            var processes = Process.GetProcessesByName(name);
+            if (processes.Length > 1)
+            {
+                Shutdown(0);
+                return;
+            }
+
+
             var random = new Random(Guid.NewGuid().GetHashCode());
             var args = new StartupArguments(e.Args);
 
