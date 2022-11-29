@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Beeper.Wpf
@@ -47,6 +48,15 @@ namespace Beeper.Wpf
                 DefaultValue = "",
                 NeedsValue = false,
             };
+            TimeOutInSeconds = new(value => (int.TryParse(value, out _), $"The value `{value}` doesn't seem to be a valid integer number."))
+            {
+                Description = $"The maximum time in seconds wich to run this app.",
+                FullName = $"{StartupArgument.ArguementDeclerator}timeout",
+                Shortcut = $"{StartupArgument.ArguementDeclerator}to",
+                Required = $"No",
+                DefaultValue = "180",
+                NeedsValue = true,
+            };
         }
 
         /// <summary>
@@ -70,6 +80,8 @@ namespace Beeper.Wpf
                     var value when value == SongsDirectory.FullName => SongsDirectory,
                     var value when value == AutoPlay.Shortcut => AutoPlay,
                     var value when value == AutoPlay.FullName => AutoPlay,
+                    var value when value == TimeOutInSeconds.Shortcut => TimeOutInSeconds,
+                    var value when value == TimeOutInSeconds.FullName => TimeOutInSeconds,
                     _ => throw new ArgumentException($"The Argument {argument} was not recognized as propper argument.", argument),
                 };
 
@@ -97,12 +109,15 @@ namespace Beeper.Wpf
 
         public StartupArgument AutoPlay { get; set; }
 
+        public StartupArgument TimeOutInSeconds { get; set; }
+
         public IEnumerable<StartupArgument> Arguments => new[]
         {
             Song,
             SongsDirectory,
             MaxNotes,
             AutoPlay,
+            TimeOutInSeconds,
         };
     }
 
