@@ -68,22 +68,9 @@ namespace Beeper.Wpf
         {
             for (int i = 0; i < arguments.Length; i++)
             {
-                string argument = arguments[i];
-                var argumentToSet = argument.ToLower() switch
-                {
-                    // "https://stackoverflow.com/a/65642709" wtf
-                    var value when value == MaxNotes.Shortcut => MaxNotes,
-                    var value when value == MaxNotes.FullName => MaxNotes,
-                    var value when value == Song.Shortcut => Song,
-                    var value when value == Song.FullName => Song,
-                    var value when value == SongsDirectory.Shortcut => SongsDirectory,
-                    var value when value == SongsDirectory.FullName => SongsDirectory,
-                    var value when value == AutoPlay.Shortcut => AutoPlay,
-                    var value when value == AutoPlay.FullName => AutoPlay,
-                    var value when value == TimeOutInSeconds.Shortcut => TimeOutInSeconds,
-                    var value when value == TimeOutInSeconds.FullName => TimeOutInSeconds,
-                    _ => throw new ArgumentException($"The Argument {argument} was not recognized as propper argument.", argument),
-                };
+                string argument = arguments[i].ToLowerInvariant();
+                var argumentToSet = Arguments.FirstOrDefault(e => e.Shortcut.ToLowerInvariant() == argument || e.FullName.ToLowerInvariant() == argument)
+                    ?? throw new ArgumentException($"The Argument {argument} was not recognized as propper argument.", argument);
 
                 try
                 {
